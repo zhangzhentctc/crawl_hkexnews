@@ -8,6 +8,8 @@
 #         Compare two date_structure
 # Author:
 #     Zhen Zhang
+# Date:
+#     12/01/2018
 # EMail:
 #     zhangzhentctc@163.com
 
@@ -53,6 +55,8 @@ class date_structure:
         else:
             return  False
 
+    def show(self):
+        print(self.date_year_str + "." + self.date_month_str + "." + self.date_day_str)
 
     def __split_date(self):
         date_list = []

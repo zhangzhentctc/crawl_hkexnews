@@ -1,3 +1,28 @@
+#
+# Function:
+#     Use either Selenuim or Request to grap html source and parse the stock info
+# Main Methods:
+#     Verify Arg
+#         This is to verify the specified
+#             1. stock type
+#             2. specified date
+#             3. method to get html
+#     Get Html
+#         Get Html Source via a method
+#     Find Date
+#         Find the date in src
+#     Verify Date
+#         verify if date equals to the one we defined
+#     Find Table
+#         Find stock information
+# Author:
+#     Zhen Zhang
+# Date:
+#     12/01/2018
+# EMail:
+#     zhangzhentctc@163.com
+
+
 import requests
 from crawls.methods.src_selenium import *
 from bs4 import BeautifulSoup
@@ -79,10 +104,11 @@ class crawl:
             pg_src = self.resp.text
 
         if self.method == CRAWL_METHOD_SELENIUM:
-            sel = src_selenium(self.req_date)
-            if sel.sele_process() == False:
+            sel = src_selenium(self.req_struct_date)
+            ret = sel.sele_process()
+            if ret != RET_OK:
                 self.crawl_report_err(ERR_CRAWL_SELE_GET_LINK)
-                return ERR_CRAWL_SELE_GET_LINK
+                return ret
             pg_src = sel.pg_src
 
         try:
