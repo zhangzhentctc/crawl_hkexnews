@@ -12,5 +12,21 @@ def get_yesterday():
 
 if __name__ == '__main__':
     #print(get_yesterday())
-    today = str(datetime.date.today())
-    print(dateRange("2017-03-17", today))
+    #today = str(datetime.date.today())
+    #print(dateRange("2017-03-17", today))
+
+    a = '2016-03-12'
+    b = '2018-01-11'
+    today_str = str(datetime.date.today())
+    a_ = datetime.datetime.strptime(a, '%Y-%m-%d')
+    b_ = datetime.datetime.strptime(b, '%Y-%m-%d')
+    today = datetime.datetime.strptime(today_str, '%Y-%m-%d')
+    c = today - b_
+    print(c.days)
+    #print(a_)
+    print(b_)
+
+    print(today)
+    list = dateRange(b, today_str)
+    list.pop(0)
+    print(list)

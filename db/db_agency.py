@@ -31,6 +31,7 @@ import datetime
 START_DATE = "2017-03-17"
 
 DBAGEN_QUERY_DAY_STATUS_ = "select mark from stock_day where day = "
+DBAGEN_QUERY_LAST_DAY = "select max(day) from stock_day"
 DBAGEN_QUERY_CODE_ = "select * from stock_info where code = "
 DBAGEN_QUERY_HUNGRY_DAY = "select * from stock_day where mark = 0"
 DBAGEN_CHECK_EMPTY_SQL = "SELECT name FROM sqlite_master WHERE type='table'"
@@ -51,6 +52,7 @@ DBAGEN_CREATE_TL_VOL_SQL = "create table stock_vol(" \
                            ")"
 ERR_DBAGEN_NOT_EMPTY = 1
 ERR_DBAGEN_DAY_TOUCHED = 2
+ERR_DBAGEN_MAX_DAY = 3
 RET_OK = 0
 
 class db_agency:
@@ -198,8 +200,66 @@ class db_agency:
             ret = self.__fill_tl_days()
             if ret != RET_OK:
                 return ret
+        else:
+            ret = self.__fill_recent_days()
+            if ret != RET_OK:
+                return ret
 
         return RET_OK
+
+    def __fill_recent_days(self):
+        ret, values = self.__exec_single_query(DBAGEN_QUERY_LAST_DAY)
+        if ret != RET_OK:
+            return ret
+
+        if len(values) == 0:
+            return ERR_DBAGEN_MAX_DAY
+        last_day_str = str(values[0][0])
+        last_day = datetime.datetime.strptime(last_day_str, '%Y-%m-%d')
+        today_str = str(datetime.date.today())
+        today = datetime.datetime.strptime(today_str, '%Y-%m-%d')
+        day_gap = today - last_day
+
+        ## If Gap Day is over 1
+        if day_gap.days > 1:
+            date_list = self.__gen_dateRange(last_day_str, today)
+            # Delete 1st one
+            date_list.pop(0)
+
+            ret = self.dbop.db_connect()
+            if ret != RET_OK:
+                return ret
+
+            ret = self.dbop.db_open_cur()
+            if ret != RET_OK:
+                return ret
+
+            for day in date_list:
+                sql = "insert into stock_day(day, mark) values (" + \
+                      "'" + str(day) + "'" + "," + \
+                      "'" + "0" + "'" + \
+                      ")"
+                ret = self.dbop.db_exec_sql(sql)
+                if ret != RET_OK:
+                    return ret
+
+            ret = self.dbop.db_commit()
+            if ret != RET_OK:
+                return ret
+
+            ret = self.dbop.db_close_cur()
+            if ret != RET_OK:
+                return ret
+
+            ret = self.dbop.db_disconnect()
+            if ret != RET_OK:
+                return ret
+
+            return RET_OK
+        else:
+            return RET_OK
+
+
 
 
     def __fill_tl_days(self):
