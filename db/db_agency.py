@@ -32,6 +32,8 @@ START_DATE = "2017-03-17"
 
 DBAGEN_QUERY_DAY_STATUS_ = "select mark from stock_day where day = "
 DBAGEN_QUERY_LAST_DAY = "select max(day) from stock_day"
+DBAGEN_QUERY_BUSY_DAYS = "select day from stock_day where mark = 1"
+DBAGEN_QUERY_STOCK_DODES = "select code from stock_info"
 DBAGEN_QUERY_CODE_ = "select * from stock_info where code = "
 DBAGEN_QUERY_HUNGRY_DAY = "select * from stock_day where mark = 0"
 DBAGEN_CHECK_EMPTY_SQL = "SELECT name FROM sqlite_master WHERE type='table'"
@@ -53,6 +55,10 @@ DBAGEN_CREATE_TL_VOL_SQL = "create table stock_vol(" \
 ERR_DBAGEN_NOT_EMPTY = 1
 ERR_DBAGEN_DAY_TOUCHED = 2
 ERR_DBAGEN_MAX_DAY = 3
+ERR_DBAGEN_NO_BUSY_DAY = 4
+ERR_DBAGEN_NO_STORED_CODE = 5
+ERR_DBAGEN_NO_VOL_FOUND = 6
+
 RET_OK = 0
 
 class db_agency:
@@ -68,6 +74,46 @@ class db_agency:
         for raw in values:
             days_list.append(raw[0])
         return RET_OK, days_list
+
+    def get_all_busy_days(self):
+        busy_days = []
+        ret, values = self.__exec_single_query(DBAGEN_QUERY_BUSY_DAYS)
+        if ret != RET_OK:
+            return ret, busy_days
+        if len(values) == 0:
+            return ERR_DBAGEN_NO_BUSY_DAY,busy_days
+
+        for raw in values:
+            busy_days.append(str(raw[0]))
+        return RET_OK, busy_days
+
+    def get_all_stock_codes(self):
+        codes = []
+        ret, values = self.__exec_single_query(DBAGEN_QUERY_STOCK_DODES)
+        if ret != RET_OK:
+            return ret, codes
+        if len(values) == 0:
+            return ERR_DBAGEN_NO_STORED_CODE,codes
+
+        for raw in values:
+            codes.append(str(raw[0]))
+        return RET_OK, codes
+
+    def get_vol(self, code, date):
+        # codes = []
+        # select volume, percent from stock_vol where code = ? and day = ?
+        sql = "select volume, percent from stock_vol where code = " + \
+            "'" + str(code) + "'" + " and day = " + \
+            "'" + str(date) + "'"
+        ret, values = self.__exec_single_query(sql)
+        if ret != RET_OK:
+            return ret, []
+        if len(values) == 0:
+            return ERR_DBAGEN_NO_VOL_FOUND, []
+
+        return RET_OK, values[0]
+
+
 
     def mark_day_rest(self, day):
         ret = self.dbop.db_connect()
