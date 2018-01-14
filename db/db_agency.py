@@ -33,7 +33,7 @@ START_DATE = "2017-03-17"
 DBAGEN_QUERY_DAY_STATUS_ = "select mark from stock_day where day = "
 DBAGEN_QUERY_LAST_DAY = "select max(day) from stock_day"
 DBAGEN_QUERY_BUSY_DAYS = "select day from stock_day where mark = 1"
-DBAGEN_QUERY_STOCK_DODES = "select code from stock_info"
+DBAGEN_QUERY_STOCK_DODES_NAMES = "select code,name from stock_info"
 DBAGEN_QUERY_CODE_ = "select * from stock_info where code = "
 DBAGEN_QUERY_HUNGRY_DAY = "select * from stock_day where mark = 0"
 DBAGEN_CHECK_EMPTY_SQL = "SELECT name FROM sqlite_master WHERE type='table'"
@@ -65,6 +65,25 @@ class db_agency:
     def __init__(self, type):
         self.dbop = db_op(type)
 
+    def db_conn_cur(self):
+        ret = self.dbop.db_connect()
+        if ret != RET_OK:
+            return ret
+
+        ret = self.dbop.db_open_cur()
+        if ret != RET_OK:
+            return ret
+        return RET_OK
+
+    def db_conn_cur_close(self):
+        ret = self.dbop.db_close_cur()
+        if ret != RET_OK:
+            return ret
+
+        ret = self.dbop.db_disconnect()
+        if ret != RET_OK:
+            return ret
+        return RET_OK
 
     def get_hungry_days(self):
         days_list = []
@@ -89,16 +108,17 @@ class db_agency:
 
     def get_all_stock_codes(self):
         codes = []
-        ret, values = self.__exec_single_query(DBAGEN_QUERY_STOCK_DODES)
+        ret, values = self.__exec_single_query(DBAGEN_QUERY_STOCK_DODES_NAMES)
         if ret != RET_OK:
             return ret, codes
         if len(values) == 0:
             return ERR_DBAGEN_NO_STORED_CODE,codes
 
         for raw in values:
-            codes.append(str(raw[0]))
+            codes.append([str(raw[0]),str(raw[1])])
         return RET_OK, codes
 
+    ### OPEN DB FIRST!!!
     def get_vol(self, code, date):
         # codes = []
         # select volume, percent from stock_vol where code = ? and day = ?
@@ -349,6 +369,17 @@ class db_agency:
         strptime, strftime = datetime.datetime.strptime, datetime.datetime.strftime
         days = (strptime(end, format) - strptime(start, format)).days
         return [strftime(strptime(start, format) + datetime.timedelta(i), format) for i in range(0, days, step)]
+
+    def __exec_pure_query(self, sql):
+        ret = self.dbop.db_exec_sql(sql)
+        if ret != RET_OK:
+            return ret,[]
+
+        ret, values = self.dbop.db_fetall()
+        if ret != RET_OK:
+            return ret,[]
+        return RET_OK, values
+
 
     def __exec_single_query(self, sql):
         ret = self.dbop.db_connect()

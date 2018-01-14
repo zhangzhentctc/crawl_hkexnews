@@ -3,12 +3,13 @@
 ## Input: Cycle, Number
 ## Output: T/F
 from db.db_agency import *
-
+import pandas as pd
 
 ERR_GEN_EXCE_ARGS = 1
 ERR_GEN_EXCE_NO_BUSY_DAY = 2
-
-
+ERR_GEN_CONS_TABLE = 3
+ERR_GEN_FILL_VOLPER = 4
+ERR_GEN_SAVE_EXCEL = 5
 RET_OK = 0
 
 TYPE_SH = "Hu"
@@ -44,13 +45,12 @@ class gen_excel:
             return ret
         return RET_OK
 
-    def get_all_busy_days(self):
+    def __get_all_busy_days(self):
         ret, list = self.db_agen.get_all_busy_days()
         if ret != RET_OK:
-            return ret
+            return ret, []
 
-        self.busy_days = list
-        return RET_OK
+        return RET_OK, list
 
     def __get_all_stock_codes(self):
         ret, list = self.db_agen.get_all_stock_codes()
@@ -66,7 +66,7 @@ class gen_excel:
         codes_dup = []
         cnt = 0
         for i in range(0, len(code_list)):
-            codes_dup.append([code_list[i], cnt])
+            codes_dup.append([code_list[i][0], code_list[i][1], cnt])
             cnt += 1
 
         self.stock_codes_dup = codes_dup
@@ -74,10 +74,16 @@ class gen_excel:
 
 
     def gen_days(self):
+        ## Get All Busy Day List
+        ret, day_list = self.__get_all_busy_days()
+        if ret != RET_OK:
+            return ret
+
+        ## Select Days
         days = []
         cnt = 0
-        for d_index in range(len(self.busy_days) - 1, -1 , (-1) * self.cycle):
-            days.append(self.busy_days[d_index])
+        for d_index in range(len(day_list) - 1, -1 , (-1) * self.cycle):
+            days.append(day_list[d_index])
             cnt += 1
             if cnt == self.num:
                 break
@@ -85,54 +91,87 @@ class gen_excel:
         if len(days) == 0:
             return ERR_GEN_EXCE_NO_BUSY_DAY
 
+        ## Make it in Order and Mark order
         days_reverse = []
         cnt = 0
         for i in range(len(days) - 1, -1, -1):
             days_reverse.append([days[i], cnt])
             cnt += 1
 
-        self.days = days_reverse
+        self.days_dup = days_reverse
 
         return RET_OK
 
     ### Prepare days, stock codes
-    def prep(self):
+    def prep_data(self):
         ret = self.validate_args()
         if ret != RET_OK:
             return ret
 
-        ret = self.get_all_stock_codes()
+        ret = self.init_db()
         if ret != RET_OK:
             return ret
 
-        ret = self.get_all_busy_days()
+
+        ret = self.gen_codes()
         if ret != RET_OK:
             return ret
 
         ret = self.gen_days()
         if ret != RET_OK:
             return ret
+        return RET_OK
 
     def __gen_columns(self):
         cols = []
         cols.append("Code")
         cols.append("Name")
-        for day in self.days:
-            cols.append(str(day) + "_" + "Volume")
-            cols.append(str(day) + "_" + "Percent")
+        for day in self.days_dup:
+            cols.append(str(day[0]) + "_" + "Volume")
+            cols.append(str(day[0]) + "_" + "Percent")
 
         return RET_OK, cols
 
+    def __init_table(self):
+        data = []
+        for code_dup in self.stock_codes_dup:
+            data.append({
+                "Code":code_dup[0],
+                "Name":code_dup[1]
+            })
+        try:
+            self.table = pd.DataFrame(data, columns=["Code","Name"])
+        except:
+            return ERR_GEN_CONS_TABLE
+
+        for day_dup in self.days_dup:
+            col_name_vol = str(day_dup[0]) + "_" + "volume"
+            col_name_per = str(day_dup[0]) + "_" + "percent"
+            try:
+                self.table[col_name_vol] = 0
+                self.table[col_name_per] = 0
+            except:
+                return ERR_GEN_CONS_TABLE
+        return RET_OK
+
+    def __fill_vol(self, code_dup, day_dup, vol, per):
+        try:
+            self.table.iloc[code_dup[2], 3 + day_dup[1] * 2 - 1] = vol
+            self.table.iloc[code_dup[2], 3 + day_dup[1] * 2] = per
+        except:
+            return ERR_GEN_FILL_VOLPER
+        return RET_OK
+
+
     def construct_table(self):
-        ret, columns = self.__gen_columns()
+        ret = self.__init_table()
         if ret != RET_OK:
             return ret
 
-        data = []
         for day_dup in self.days_dup:
             for code_dup in self.stock_codes_dup:
                 ## Get vals
-                ret, vals = self.db_agen.get_vol(code, day)
+                ret, vals = self.db_agen.get_vol(code_dup[0], day_dup[0])
                 if ret == RET_OK:
                     vol = vals[0]
                     per = vals[1]
@@ -143,14 +182,18 @@ class gen_excel:
                     continue
 
                 ## Fill in the table
-                data.append({
+                ret = self.__fill_vol(code_dup, day_dup, vol, per)
+                if ret != RET_OK:
+                    return ret
 
-                })
+        return RET_OK
 
-
-
-
-
-
-
+    def gen_excel(self):
+        try:
+            writer = pd.ExcelWriter('Save_Excel.xlsx')
+            self.table.to_excel(writer, 'page_1')
+            writer.save()
+        except:
+            return ERR_GEN_SAVE_EXCEL
+        return RET_OK
 
