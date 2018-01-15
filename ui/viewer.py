@@ -194,7 +194,3 @@ class viewer:
         self.set_refresh_text_gp2(self.text_gp2, gen_l)
         gen_l.start()
 
-
-v= viewer()
-v.init_components()
-v.start_viewer()

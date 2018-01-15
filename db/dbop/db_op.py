@@ -1,5 +1,5 @@
 import sqlite3
-
+import time
 TYPE_SH = "Hu"
 TYPE_HK = "Gang"
 DB_NAME_SH = 'test_sh.db'
@@ -57,7 +57,6 @@ class db_op:
 
     def db_exec_sql(self, sql):
         try:
-            #print(sql)
             self.cursor.execute(sql)
         except:
             return ERR_DB_EXEC
