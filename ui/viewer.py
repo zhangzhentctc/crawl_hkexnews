@@ -3,7 +3,7 @@ from tkinter import ttk
 from usr.gen_excel import *
 from usr.update_db import *
 from usr.show_last_day import *
-
+#import tkMessageBox
 
 ENGLISH = 1
 CHINESE = 2
@@ -42,8 +42,14 @@ class viewer:
     def __init__(self):
         pass
 
+    def close_callback(self):
+
+
+        self.tk_root.destroy()
+
     def __init_basic(self):
         self.tk_root = Tk()
+        self.tk_root.protocol("WM_DELETE_WINDOW", self.close_callback)
 
     def __init_wid_last_days(self):
         self.text_gp_1_hk = Text(self.tk_root, height=1)
@@ -184,13 +190,13 @@ class viewer:
         text.after(100, self.set_refresh_text_gp2, text, gen_hl)
 
     def usr_update_db(self):
-        update_l = update_db(self.mkt_type.get())
-        self.set_refresh_text_gp1(self.text_gp1, update_l)
-        update_l.start()
+        self.update_l = update_db(self.mkt_type.get())
+        self.set_refresh_text_gp1(self.text_gp1, self.update_l)
+        self.update_l.start()
 
 
     def usr_gen_excel(self):
-        gen_l = gen_excel(self.mkt_type.get(), self.cycle, self.number)
-        self.set_refresh_text_gp2(self.text_gp2, gen_l)
-        gen_l.start()
+        self.gen_l = gen_excel(self.mkt_type.get(), self.cycle, self.number)
+        self.set_refresh_text_gp2(self.text_gp2, self.gen_l)
+        self.gen_l.start()
 

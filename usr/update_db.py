@@ -28,6 +28,8 @@ class update_db(threading.Thread):
 
     def update_info(self):
         for day in self.empty_days:
+            if self.stopped == True:
+                return -1
             self.status_text = "crawl " + str(day)
             crawl_t = crawl(day, self.stock_type)
             ret = crawl_t.crawl_process()
@@ -45,6 +47,7 @@ class update_db(threading.Thread):
             else:
                 self.update_err(ret)
                 continue
+
 
     def update_process(self):
         ret = self.get_empty_days()
@@ -66,7 +69,11 @@ class update_db(threading.Thread):
         print(ret)
 
     def run(self):
+        self.stopped = False
         ret = self.update_process()
         if ret != RET_OK:
             return ret
         return RET_OK
+
+    def stop(self):
+        self.stopped = True

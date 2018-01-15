@@ -181,6 +181,8 @@ class gen_excel(threading.Thread):
         for day_dup in self.days_dup:
 
             for code_dup in self.stock_codes_dup:
+                if self.stopped == True:
+                    return -1
                 self.gen_status = STATUS_FIND_DATA + " " + str(day_dup[0]) + " " + str(code_dup[1]) + " " + str(code_dup[0])
                 ## Get vals
                 ret, vals = self.db_agen.get_vol(code_dup[0], day_dup[0])
@@ -211,6 +213,7 @@ class gen_excel(threading.Thread):
         return RET_OK
 
     def run(self):
+        self.stopped = False
         ret = self.prep_data()
         if ret != RET_OK:
             self.gen_status = STATUS_ERR + " " + str(ret)
@@ -232,3 +235,5 @@ class gen_excel(threading.Thread):
     def get_gen_status(self):
         return self.gen_status
 
+    def stop(self):
+        self.stopped = True

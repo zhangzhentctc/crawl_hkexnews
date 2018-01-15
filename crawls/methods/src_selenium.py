@@ -115,6 +115,7 @@ class src_selenium:
     def close_driver(self):
         try:
             self.driver.close()
+            self.driver.quit()
         except:
             return ERR_SELENIUM_DRIVER_CLOSE
         return RET_OK
