@@ -32,6 +32,7 @@ START_DATE = "2017-03-17"
 
 DBAGEN_QUERY_DAY_STATUS_ = "select mark from stock_day where day = "
 DBAGEN_QUERY_LAST_DAY = "select max(day) from stock_day"
+DBAGEN_QUERY_LAST_BUSY_DAY = "select max(day) from stock_day where mark = 1"
 DBAGEN_QUERY_BUSY_DAYS = "select day from stock_day where mark = 1"
 DBAGEN_QUERY_STOCK_DODES_NAMES = "select code,name from stock_info"
 DBAGEN_QUERY_CODE_ = "select * from stock_info where code = "
@@ -272,6 +273,18 @@ class db_agency:
                 return ret
 
         return RET_OK
+
+    def get_last_busy_day(self):
+        ret, values = self.__exec_single_query(DBAGEN_QUERY_LAST_BUSY_DAY)
+        if ret != RET_OK:
+            return ret, ""
+
+        if len(values) == 0:
+            return ERR_DBAGEN_MAX_DAY, ""
+
+        last_day_str = str(values[0][0])
+        return RET_OK, last_day_str
+
 
     def __fill_recent_days(self):
         ret, values = self.__exec_single_query(DBAGEN_QUERY_LAST_DAY)
