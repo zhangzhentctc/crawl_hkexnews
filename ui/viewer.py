@@ -2,14 +2,39 @@ from tkinter import *
 from tkinter import ttk
 from usr.gen_excel import *
 from usr.update_db import *
+from usr.show_last_day import *
 
-STR_GP0_RBTN_SH = "SH"
-STR_GP0_RBTN_HK = "HK"
-STR_GP1_BTN = "UPDATE"
-STR_GP1_TEXT = "Idle"
-STR_GP2_BTN = "GEN"
-STR_GP2_TEXT = "Idle"
+
+ENGLISH = 1
+CHINESE = 2
+
+language = CHINESE
+if language == ENGLISH:
+    STR_GP_1_BTN = "Check Database"
+    STR_GP_1_SH = "SH Last Day: "
+    STR_GP_1_HK = "HK Last Day: "
+    STR_GP0_RBTN_SH = "SH"
+    STR_GP0_RBTN_HK = "HK"
+    STR_GP1_BTN = "UPDATE"
+    STR_GP1_TEXT = "Idle"
+    STR_GP2_BTN = "GEN"
+    STR_GP2_TEXT = "Idle"
+if language == CHINESE:
+    STR_GP_1_BTN = "查看数据库更新日期"
+    STR_GP_1_SH = "沪 更新日期: "
+    STR_GP_1_HK = "港 更新日期: "
+    STR_GP0_RBTN_SH = "沪"
+    STR_GP0_RBTN_HK = "港"
+    STR_GP1_BTN = "更新数据库"
+    STR_GP1_TEXT = "空闲"
+    STR_GP2_BTN = "生成Excel"
+    STR_GP2_TEXT = "空闲"
+
+
 STR_GAP = "*********************************"
+
+
+
 TYPE_SH = "Hu"
 TYPE_HK = "Gang"
 
@@ -19,6 +44,20 @@ class viewer:
 
     def __init_basic(self):
         self.tk_root = Tk()
+
+    def __init_wid_last_days(self):
+        self.text_gp_1_hk = Text(self.tk_root, height=1)
+        self.text_gp_1_hk.pack()
+        self.text_gp_1_hk.config(state=DISABLED)
+        self.text_gp_1_sh = Text(self.tk_root, height=1)
+        self.text_gp_1_sh.pack()
+        self.text_gp_1_sh.config(state=DISABLED)
+        self.btn_gp1 = Button(self.tk_root, text = STR_GP_1_BTN,command=lambda: self.get_last_days())
+        self.btn_gp1.pack()
+        self.text_gp_1_gap = Text(self.tk_root, height=1)
+        self.text_gp_1_gap.pack()
+        self.text_gp_1_gap.insert('insert', STR_GAP)
+        self.text_gp_1_gap.config(state=DISABLED)
 
     def __init_wid_mkt_type(self):
         ### Single Select Button
@@ -105,9 +144,27 @@ class viewer:
 
     def init_components(self):
         self.__init_basic()
+        self.__init_wid_last_days()
         self.__init_wid_mkt_type()
         self.__init_wid_update()
         self.__init_wid_cycle_num()
+
+    def get_last_days(self):
+        show_ld = show_last_day()
+        show_ld.run()
+        #self.text_gp0_gap.insert('insert', STR_GAP)
+        #self.text_gp0_gap.config(state=DISABLED)
+        self.text_gp_1_sh.config(state=NORMAL)
+        self.text_gp_1_sh.delete(1.0, "end")
+        self.text_gp_1_sh.insert('insert', STR_GP_1_SH + str(show_ld.last_day_sh))
+        self.text_gp_1_sh.config(state=DISABLED)
+
+        self.text_gp_1_hk.config(state=NORMAL)
+        self.text_gp_1_hk.delete(1.0, "end")
+        self.text_gp_1_hk.insert('insert', STR_GP_1_HK + str(show_ld.last_day_hk))
+        self.text_gp_1_hk.config(state=DISABLED)
+
+
 
     def start_viewer(self):
         self.tk_root.mainloop()
@@ -127,17 +184,12 @@ class viewer:
         text.after(100, self.set_refresh_text_gp2, text, gen_hl)
 
     def usr_update_db(self):
-        print("usr update db")
-        print(self.mkt_type.get())
         update_l = update_db(self.mkt_type.get())
         self.set_refresh_text_gp1(self.text_gp1, update_l)
         update_l.start()
 
 
     def usr_gen_excel(self):
-        print("usr generate excel")
-        print(self.cycle)
-        print(self.number)
         gen_l = gen_excel(self.mkt_type.get(), self.cycle, self.number)
         self.set_refresh_text_gp2(self.text_gp2, gen_l)
         gen_l.start()
