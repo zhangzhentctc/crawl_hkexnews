@@ -5,9 +5,11 @@
 
 from crawls.crawl import *
 from db.db_agency import *
+import threading
 
-class update_db:
+class update_db(threading.Thread):
     def __init__(self, type):
+        super(update_db, self).__init__()
         self.status_text = "Idle"
         self.stock_type = type
         self.db_agen = db_agency(self.stock_type)
@@ -47,13 +49,24 @@ class update_db:
     def update_process(self):
         ret = self.get_empty_days()
         if ret != RET_OK:
+            self.status_text = "crawl Error " + str(ret)
             return ret
 
         ret = self.update_info()
         if ret != RET_OK:
+            self.status_text = "crawl Error " + str(ret)
             return ret
-
+        self.status_text = "crawl OK"
         return RET_OK
+
+    def get_update_status(self):
+        return self.status_text
 
     def update_err(self, ret):
         print(ret)
+
+    def run(self):
+        ret = self.update_process()
+        if ret != RET_OK:
+            return ret
+        return RET_OK

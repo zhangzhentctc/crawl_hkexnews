@@ -4,6 +4,7 @@
 ## Output: T/F
 from db.db_agency import *
 import pandas as pd
+import threading
 
 ERR_GEN_EXCE_ARGS = 1
 ERR_GEN_EXCE_NO_BUSY_DAY = 2
@@ -15,13 +16,21 @@ RET_OK = 0
 TYPE_SH = "Hu"
 TYPE_HK = "Gang"
 
+STATUS_IDLE = "GEN: Idle"
+STATUS_ERR = "GEN: Error.."
+STATUS_Done = "GEN: OK"
+STATUS_PREP_DATA = "GEN: Preparing..."
+STATUS_FIND_DATA = "GEN: Finding..."
+STATUS_GEN_EXCEL = "GEN: Generating Excel..."
 
 
-class gen_excel:
+class gen_excel(threading.Thread):
     def __init__(self, mkt_type, cycle, num):
+        super(gen_excel, self).__init__()
         self.cycle = cycle
         self.num = num
         self.mkt_type = mkt_type
+        self.gen_status = STATUS_IDLE
 
     def validate_args(self):
         try:
@@ -104,6 +113,7 @@ class gen_excel:
 
     ### Prepare days, stock codes
     def prep_data(self):
+        self.gen_status = STATUS_PREP_DATA
         ret = self.validate_args()
         if ret != RET_OK:
             return ret
@@ -169,7 +179,9 @@ class gen_excel:
             return ret
 
         for day_dup in self.days_dup:
+
             for code_dup in self.stock_codes_dup:
+                self.gen_status = STATUS_FIND_DATA + " " + str(day_dup[0]) + " " + str(code_dup[1]) + " " + str(code_dup[0])
                 ## Get vals
                 ret, vals = self.db_agen.get_vol(code_dup[0], day_dup[0])
                 if ret == RET_OK:
@@ -189,11 +201,34 @@ class gen_excel:
         return RET_OK
 
     def gen_excel(self):
+        self.gen_status = STATUS_GEN_EXCEL
         try:
-            writer = pd.ExcelWriter('Save_Excel.xlsx')
+            writer = pd.ExcelWriter("Save_Excel_" + str(self.mkt_type) + ".xlsx")
             self.table.to_excel(writer, 'page_1')
             writer.save()
         except:
             return ERR_GEN_SAVE_EXCEL
         return RET_OK
+
+    def run(self):
+        ret = self.prep_data()
+        if ret != RET_OK:
+            self.gen_status = STATUS_ERR + " " + str(ret)
+            return ret
+
+        ret = self.construct_table()
+        if ret != RET_OK:
+            self.gen_status = STATUS_ERR + " " + str(ret)
+            return ret
+
+        ret = self.gen_excel()
+        if ret != RET_OK:
+            self.gen_status = STATUS_ERR + " " + str(ret)
+            return ret
+
+        self.gen_status = STATUS_Done
+        return RET_OK
+
+    def get_gen_status(self):
+        return self.gen_status
 
