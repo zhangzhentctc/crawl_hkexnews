@@ -43,13 +43,19 @@ class viewer:
         pass
 
     def close_callback(self):
-
-
+        try:
+            self.update_l.stop()
+            self.gen_l.stop()
+            time.sleep(1)
+        except:
+            pass
         self.tk_root.destroy()
+        exit(0)
 
     def __init_basic(self):
         self.tk_root = Tk()
         self.tk_root.protocol("WM_DELETE_WINDOW", self.close_callback)
+
 
     def __init_wid_last_days(self):
         self.text_gp_1_hk = Text(self.tk_root, height=1)
