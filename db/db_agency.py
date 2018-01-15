@@ -288,7 +288,7 @@ class db_agency:
 
         ## If Gap Day is over 1
         if day_gap.days > 1:
-            date_list = self.__gen_dateRange(last_day_str, today)
+            date_list = self.__gen_dateRange(last_day_str, today_str)
             # Delete 1st one
             date_list.pop(0)
 
