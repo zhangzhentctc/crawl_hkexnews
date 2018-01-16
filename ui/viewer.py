@@ -183,10 +183,14 @@ class viewer:
 
 
     def set_refresh_text_gp1(self, text, update_hl):
-        str = update_hl.get_update_status()
-        text.delete(1.0,"end")
-        text.insert("end", str)
-        text.after(100, self.set_refresh_text_gp1, text, update_hl)
+        if update_hl.stopped == True:
+            text.after_cancel(self.set_refresh_text_gp1)
+        else:
+            str = update_hl.get_update_status()
+            text.delete(1.0, "end")
+            text.insert("end", str)
+            text.after(100, self.set_refresh_text_gp1, text, update_hl)
+
 
     def set_refresh_text_gp2(self, text, gen_hl):
         str = gen_hl.get_gen_status()
@@ -195,9 +199,16 @@ class viewer:
         text.after(100, self.set_refresh_text_gp2, text, gen_hl)
 
     def usr_update_db(self):
-        self.update_l = update_db(self.mkt_type.get())
-        self.set_refresh_text_gp1(self.text_gp1, self.update_l)
-        self.update_l.start()
+        try:
+            stopped = self.update_l.stopped
+        except:
+            stopped = True
+        if stopped:
+            self.update_l = update_db(self.mkt_type.get())
+            self.set_refresh_text_gp1(self.text_gp1, self.update_l)
+            self.update_l.start()
+        else:
+            print("Busy")
 
 
     def usr_gen_excel(self):

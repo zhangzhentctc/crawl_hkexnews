@@ -13,6 +13,7 @@ class update_db(threading.Thread):
         self.status_text = "Idle"
         self.stock_type = type
         self.db_agen = db_agency(self.stock_type)
+        self.stopped = False
 
     def get_empty_days(self):
         self.status_text = "Get Empty Days"
@@ -47,6 +48,7 @@ class update_db(threading.Thread):
             else:
                 self.update_err(ret)
                 continue
+        return RET_OK
 
 
     def update_process(self):
@@ -72,7 +74,10 @@ class update_db(threading.Thread):
         self.stopped = False
         ret = self.update_process()
         if ret != RET_OK:
+            self.stopped = True
             return ret
+        self.status_text = "crawl Ok"
+        self.stopped = True
         return RET_OK
 
     def stop(self):
