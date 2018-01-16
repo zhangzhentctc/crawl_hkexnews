@@ -48,6 +48,7 @@ class update_db(threading.Thread):
             else:
                 self.update_err(ret)
                 continue
+        self.status_text = "crawl OK"
         return RET_OK
 
 

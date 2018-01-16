@@ -216,6 +216,7 @@ class gen_excel(threading.Thread):
             writer.save()
         except:
             return ERR_GEN_SAVE_EXCEL
+        self.gen_status = STATUS_Done
         return RET_OK
 
     def run(self):

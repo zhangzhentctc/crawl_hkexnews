@@ -184,6 +184,9 @@ class viewer:
 
     def set_refresh_text_gp1(self, text, update_hl):
         if update_hl.stopped == True:
+            str = update_hl.get_update_status()
+            text.delete(1.0, "end")
+            text.insert("end", str)
             text.after_cancel(self.set_refresh_text_gp1)
         else:
             str = update_hl.get_update_status()
@@ -194,6 +197,9 @@ class viewer:
 
     def set_refresh_text_gp2(self, text, gen_hl):
         if gen_hl.stopped == True:
+            str = gen_hl.get_gen_status()
+            text.delete(1.0,"end")
+            text.insert("end", str)
             text.after_cancel(self.set_refresh_text_gp2)
         else:
             str = gen_hl.get_gen_status()
