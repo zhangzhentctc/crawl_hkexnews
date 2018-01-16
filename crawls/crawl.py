@@ -263,6 +263,10 @@ class crawl:
         ret = self.req_struct_date.compare_date(self.req_struct_rcv_date)
         if ret != True:
             return ERR_CRAWL_DATE_MATCH
+
+        ret, week = self.req_struct_date.get_week()
+        if ret == True and week == 5:
+            return ERR_CRAWL_DATE_MATCH
         return RET_OK
 
 

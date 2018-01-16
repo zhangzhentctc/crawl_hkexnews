@@ -12,6 +12,8 @@
 #     12/01/2018
 # EMail:
 #     zhangzhentctc@163.com
+import datetime
+
 
 class date_structure:
     def __init__(self, date):
@@ -46,6 +48,12 @@ class date_structure:
 
         return True
 
+    def get_week(self):
+        try:
+            week = datetime.datetime.strptime(self.date, "%Y-%m-%d").weekday()
+        except:
+            return False, -1
+        return True, week
 
     def compare_date(self, that_date):
         if self.date_day == that_date.date_day and \
