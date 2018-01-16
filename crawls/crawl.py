@@ -104,7 +104,7 @@ class crawl:
             pg_src = self.resp.text
 
         if self.method == CRAWL_METHOD_SELENIUM:
-            sel = src_selenium(self.req_struct_date)
+            sel = src_selenium(self.req_struct_date, self.link)
             ret = sel.sele_process()
             if ret != RET_OK:
                 self.crawl_report_err(ERR_CRAWL_SELE_GET_LINK)

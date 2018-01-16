@@ -25,9 +25,9 @@ TIMEOUT = 10
 
 
 class src_selenium:
-    def __init__(self, date_strcture):
+    def __init__(self, date_strcture, link):
         self.date_strcture = date_strcture
-        #self.date_strcture.show()
+        self.link = link
 
     def selenium_err(self, err_type):
         print("Err")
@@ -43,7 +43,7 @@ class src_selenium:
 
     def get_link(self):
         try:
-            self.driver.get("http://www.hkexnews.hk/sdw/search/mutualmarket_c.aspx?t=hk")
+            self.driver.get(self.link)
             self.driver.set_page_load_timeout(TIMEOUT)
         except:
             self.selenium_err(ERR_SELENIUM_GET_TIMEOUT)
