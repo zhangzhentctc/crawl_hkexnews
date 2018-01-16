@@ -210,7 +210,7 @@ class gen_excel(threading.Thread):
         if os.path.exists(file_name):
             os.remove(file_name)
         try:
-            writer = pd.ExcelWriter()
+            writer = pd.ExcelWriter(file_name)
             self.table.to_excel(writer, 'page_1')
             writer.save()
         except:
