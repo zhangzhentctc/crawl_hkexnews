@@ -33,6 +33,7 @@ class gen_excel(threading.Thread):
         self.num = num
         self.mkt_type = mkt_type
         self.gen_status = STATUS_IDLE
+        self.stopped = False
 
     def validate_args(self):
         try:
@@ -222,19 +223,23 @@ class gen_excel(threading.Thread):
         ret = self.prep_data()
         if ret != RET_OK:
             self.gen_status = STATUS_ERR + " " + str(ret)
+            self.stopped = True
             return ret
 
         ret = self.construct_table()
         if ret != RET_OK:
             self.gen_status = STATUS_ERR + " " + str(ret)
+            self.stopped = True
             return ret
 
         ret = self.gen_excel()
         if ret != RET_OK:
             self.gen_status = STATUS_ERR + " " + str(ret)
+            self.stopped = True
             return ret
 
         self.gen_status = STATUS_Done
+        self.stopped = True
         return RET_OK
 
     def get_gen_status(self):
