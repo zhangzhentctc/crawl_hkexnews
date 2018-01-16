@@ -5,12 +5,14 @@
 from db.db_agency import *
 import pandas as pd
 import threading
+import os
 
-ERR_GEN_EXCE_ARGS = 1
-ERR_GEN_EXCE_NO_BUSY_DAY = 2
-ERR_GEN_CONS_TABLE = 3
-ERR_GEN_FILL_VOLPER = 4
-ERR_GEN_SAVE_EXCEL = 5
+ERR_GEN_BASE = 30000
+ERR_GEN_EXCE_ARGS = ERR_GEN_BASE + 1
+ERR_GEN_EXCE_NO_BUSY_DAY = ERR_GEN_BASE + 2
+ERR_GEN_CONS_TABLE = ERR_GEN_BASE + 3
+ERR_GEN_FILL_VOLPER = ERR_GEN_BASE + 4
+ERR_GEN_SAVE_EXCEL = ERR_GEN_BASE + 5
 RET_OK = 0
 
 TYPE_SH = "Hu"
@@ -204,8 +206,11 @@ class gen_excel(threading.Thread):
 
     def gen_excel(self):
         self.gen_status = STATUS_GEN_EXCEL
+        file_name = "hkexnews_" + str(self.mkt_type) + ".xlsx"
+        if os.path.exists(file_name):
+            os.remove(file_name)
         try:
-            writer = pd.ExcelWriter("Save_Excel_" + str(self.mkt_type) + ".xlsx")
+            writer = pd.ExcelWriter()
             self.table.to_excel(writer, 'page_1')
             writer.save()
         except:
