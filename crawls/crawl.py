@@ -34,10 +34,12 @@ import time
 
 TYPE_SH = "Hu"
 TYPE_HK = "Gang"
-TYPE_LIST = [TYPE_SH, TYPE_HK]
+TYPE_SZ = "Shen"
+TYPE_LIST = [TYPE_SH, TYPE_HK, TYPE_SZ]
 
 LINK_SH = 'http://www.hkexnews.hk/sdw/search/mutualmarket_c.aspx?t=sh'
 LINK_HK = 'http://www.hkexnews.hk/sdw/search/mutualmarket_c.aspx?t=hk'
+LINK_SZ = 'http://www.hkexnews.hk/sdw/search/mutualmarket_c.aspx?t=sz'
 
 CRAWL_METHOD_REQUEST = 1
 CRAWL_METHOD_SELENIUM = 2
@@ -82,6 +84,8 @@ class crawl:
             self.link = LINK_SH
         if self.type == TYPE_HK:
             self.link = LINK_HK
+        if self.type == TYPE_SZ:
+            self.link = LINK_SZ
 
         if self.method not in CRAWL_METHOD_LIST:
             return ERR_CRAWL_TYPE

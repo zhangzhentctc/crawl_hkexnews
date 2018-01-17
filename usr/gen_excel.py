@@ -17,7 +17,7 @@ RET_OK = 0
 
 TYPE_SH = "Hu"
 TYPE_HK = "Gang"
-
+TYPE_SZ = "Shen"
 STATUS_IDLE = "GEN: Idle"
 STATUS_ERR = "GEN: Error.."
 STATUS_Done = "GEN: OK"
@@ -45,7 +45,7 @@ class gen_excel(threading.Thread):
         if self.cycle < 1 or self.num < 1:
             return ERR_GEN_EXCE_ARGS
 
-        if self.mkt_type not in [TYPE_HK, TYPE_SH]:
+        if self.mkt_type not in [TYPE_HK, TYPE_SH, TYPE_SZ]:
             return ERR_GEN_EXCE_ARGS
 
         return RET_OK

@@ -7,6 +7,7 @@ class show_last_day(threading.Thread):
         super(show_last_day, self).__init__()
         self.last_day_sh = ""
         self.last_day_hk = ""
+        self.last_day_sz = ""
 
 
     def get_last_day(self, mkt_type):
@@ -30,5 +31,10 @@ class show_last_day(threading.Thread):
         if ret != RET_OK:
             return ret
         self.last_day_hk = last_day_hk
+
+        ret, last_day_sz = self.get_last_day(TYPE_SZ)
+        if ret != RET_OK:
+            return ret
+        self.last_day_sz = last_day_sz
         return RET_OK
 

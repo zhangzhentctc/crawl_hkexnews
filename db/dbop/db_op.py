@@ -2,8 +2,10 @@ import sqlite3
 import time
 TYPE_SH = "Hu"
 TYPE_HK = "Gang"
+TYPE_SZ = "Shen"
 DB_NAME_SH = 'test_sh.db'
 DB_NAME_HK = 'test_hk.db'
+DB_NAME_SZ = 'test_sz.db'
 ERR_DB_BASE = 9000
 ERR_DB_CONN = ERR_DB_BASE + 1
 ERR_DB_CUR = ERR_DB_BASE + 2
@@ -22,6 +24,8 @@ class db_op:
             self.db = DB_NAME_SH
         elif type == TYPE_HK:
             self.db = DB_NAME_HK
+        elif type == TYPE_SZ:
+            self.db = DB_NAME_SZ
         else:
             self.db = DB_NAME_HK
 

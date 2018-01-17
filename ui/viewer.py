@@ -13,8 +13,10 @@ if language == ENGLISH:
     STR_GP_1_BTN = "Check Database"
     STR_GP_1_SH = "SH Last Day: "
     STR_GP_1_HK = "HK Last Day: "
+    STR_GP_1_HK = "SZ Last Day: "
     STR_GP0_RBTN_SH = "SH"
     STR_GP0_RBTN_HK = "HK"
+    STR_GP0_RBTN_SZ = "SZ"
     STR_GP1_BTN = "UPDATE"
     STR_GP1_TEXT = "Idle"
     STR_GP2_BTN = "GEN"
@@ -23,8 +25,10 @@ if language == CHINESE:
     STR_GP_1_BTN = "查看数据库更新日期"
     STR_GP_1_SH = "沪 更新日期: "
     STR_GP_1_HK = "港 更新日期: "
+    STR_GP_1_SZ = "深 更新日期: "
     STR_GP0_RBTN_SH = "沪"
     STR_GP0_RBTN_HK = "港"
+    STR_GP0_RBTN_SZ = "深"
     STR_GP1_BTN = "更新数据库"
     STR_GP1_TEXT = "空闲"
     STR_GP2_BTN = "生成Excel"
@@ -37,6 +41,7 @@ STR_GAP = "*********************************"
 
 TYPE_SH = "Hu"
 TYPE_HK = "Gang"
+TYPE_SZ = "Shen"
 
 class viewer:
     def __init__(self):
@@ -64,6 +69,9 @@ class viewer:
         self.text_gp_1_sh = Text(self.tk_root, height=1)
         self.text_gp_1_sh.pack()
         self.text_gp_1_sh.config(state=DISABLED)
+        self.text_gp_1_sz = Text(self.tk_root, height=1)
+        self.text_gp_1_sz.pack()
+        self.text_gp_1_sz.config(state=DISABLED)
         self.btn_gp1 = Button(self.tk_root, text = STR_GP_1_BTN,command=lambda: self.get_last_days())
         self.btn_gp1.pack()
         self.text_gp_1_gap = Text(self.tk_root, height=1)
@@ -78,6 +86,8 @@ class viewer:
         self.rbtn_gp0_sh = Radiobutton(self.tk_root, text=STR_GP0_RBTN_SH,variable=self.mkt_type, value=TYPE_SH,anchor=W,width=20)
         self.rbtn_gp0_sh.pack(fill=X)
         self.rbtn_gp0_hk = Radiobutton(self.tk_root, text=STR_GP0_RBTN_HK,variable=self.mkt_type, value=TYPE_HK,anchor=W,width=20)
+        self.rbtn_gp0_hk.pack(fill=X)
+        self.rbtn_gp0_hk = Radiobutton(self.tk_root, text=STR_GP0_RBTN_SZ,variable=self.mkt_type, value=TYPE_SZ,anchor=W,width=20)
         self.rbtn_gp0_hk.pack(fill=X)
         self.text_gp0_gap = Text(self.tk_root, height=1)
         self.text_gp0_gap.pack()
@@ -175,6 +185,10 @@ class viewer:
         self.text_gp_1_hk.insert('insert', STR_GP_1_HK + str(show_ld.last_day_hk))
         self.text_gp_1_hk.config(state=DISABLED)
 
+        self.text_gp_1_sz.config(state=NORMAL)
+        self.text_gp_1_sz.delete(1.0, "end")
+        self.text_gp_1_sz.insert('insert', STR_GP_1_SZ + str(show_ld.last_day_sz))
+        self.text_gp_1_sz.config(state=DISABLED)
 
 
     def start_viewer(self):
