@@ -21,6 +21,8 @@ if language == ENGLISH:
     STR_GP1_TEXT = "Idle"
     STR_GP2_BTN = "GEN"
     STR_GP2_TEXT = "Idle"
+    STR_GP2_TEXT_CYCLE = "Cycle"
+    STR_GP2_TEXT_NUM = "Number"
 if language == CHINESE:
     STR_GP_1_BTN = "查看数据库更新日期"
     STR_GP_1_SH = "沪 更新日期: "
@@ -33,6 +35,8 @@ if language == CHINESE:
     STR_GP1_TEXT = "空闲"
     STR_GP2_BTN = "生成Excel"
     STR_GP2_TEXT = "空闲"
+    STR_GP2_TEXT_CYCLE = "周期"
+    STR_GP2_TEXT_NUM = "数量"
 
 
 STR_GAP = "*********************************"
@@ -111,7 +115,7 @@ class viewer:
         ## Combobox for cycle and number
         self.text_gp2_cycle = Text(self.tk_root, width=20, height=1)
         self.text_gp2_cycle.pack()
-        self.text_gp2_cycle.insert('insert', "Cycle")
+        self.text_gp2_cycle.insert('insert', STR_GP2_TEXT_CYCLE)
         self.text_gp2_cycle.config(state=DISABLED)
 
         cycle_list = []
@@ -128,7 +132,7 @@ class viewer:
 
         self.text_gp2_num = Text(self.tk_root,width=20, height=1)
         self.text_gp2_num.pack()
-        self.text_gp2_num.insert('insert', "Number")
+        self.text_gp2_num.insert('insert', STR_GP2_TEXT_NUM)
         self.text_gp2_num.config(state=DISABLED)
 
         num_list = []
