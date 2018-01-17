@@ -15,7 +15,7 @@ if __name__ == '__main__':
     #today = str(datetime.date.today())
     #print(dateRange("2017-03-17", today))
 
-    a = '2016-03-12'
+    a = '2016-03-15'
     b = '2018-01-11'
     today_str = str(datetime.date.today())
     a_ = datetime.datetime.strptime(a, '%Y-%m-%d')
@@ -30,3 +30,9 @@ if __name__ == '__main__':
     list = dateRange(b, today_str)
     list.pop(0)
     print(list)
+
+
+    week = datetime.datetime.strptime(a, "%Y-%m-%d").weekday()
+    print(str(week) + " " + a)
+    if week == 1:
+        print("1111")
