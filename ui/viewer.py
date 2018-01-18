@@ -33,7 +33,7 @@ if language == CHINESE:
     STR_GP0_RBTN_SH = "沪"
     STR_GP0_RBTN_HK = "港"
     STR_GP0_RBTN_SZ = "深"
-    STR_GP1_BTN = "更新数据库"
+    STR_GP1_BTN = "更新沪深港数据库"
     STR_GP1_TEXT = "空闲"
     STR_GP2_BTN = "生成Excel"
     STR_GP2_TEXT = "空闲"
@@ -78,8 +78,8 @@ class viewer:
         self.text_gp_1_sz = Text(self.tk_root, height=1)
         self.text_gp_1_sz.pack()
         self.text_gp_1_sz.config(state=DISABLED)
-        self.btn_gp1 = Button(self.tk_root, text = STR_GP_1_BTN,command=lambda: self.get_last_days())
-        self.btn_gp1.pack()
+        self.btn_gp_1 = Button(self.tk_root, text = STR_GP_1_BTN,command=lambda: self.get_last_days())
+        self.btn_gp_1.pack()
         self.text_gp_1_gap = Text(self.tk_root, height=1)
         self.text_gp_1_gap.pack()
         self.text_gp_1_gap.insert('insert', STR_GAP)
@@ -175,8 +175,8 @@ class viewer:
     def init_components(self):
         self.__init_basic()
         self.__init_wid_last_days()
-        self.__init_wid_mkt_type()
         self.__init_wid_update()
+        self.__init_wid_mkt_type()
         self.__init_wid_cycle_num()
 
     def get_last_days(self):
@@ -226,6 +226,9 @@ class viewer:
             str = update_hl.get_update_status()
             text.delete(1.0, "end")
             text.insert("end", str)
+            self.btn_gp_1.config(state=NORMAL)
+            self.btn_gp1.config(state=NORMAL)
+            self.btn_gp2_gen.config(state=NORMAL)
             text.after_cancel(self.set_refresh_text_gp1)
         else:
             str = update_hl.get_update_status()
@@ -239,6 +242,9 @@ class viewer:
             str = gen_hl.get_gen_status()
             text.delete(1.0,"end")
             text.insert("end", str)
+            self.btn_gp_1.config(state=NORMAL)
+            self.btn_gp1.config(state=NORMAL)
+            self.btn_gp2_gen.config(state=NORMAL)
             text.after_cancel(self.set_refresh_text_gp2)
         else:
             str = gen_hl.get_gen_status()
@@ -246,12 +252,18 @@ class viewer:
             text.insert("end", str)
             text.after(100, self.set_refresh_text_gp2, text, gen_hl)
 
+    #def usr_update_all(self):
+
+
     def usr_update_db(self):
         try:
             stopped = self.update_l.stopped
         except:
             stopped = True
         if stopped:
+            self.btn_gp_1.config(state=DISABLED)
+            self.btn_gp1.config(state = DISABLED)
+            self.btn_gp2_gen.config(state=DISABLED)
             self.update_l = update_db(self.mkt_type.get(), self.get_last_days)
             self.set_refresh_text_gp1(self.text_gp1, self.update_l)
             self.update_l.start()
@@ -265,6 +277,9 @@ class viewer:
         except:
             stopped = True
         if stopped:
+            self.btn_gp_1.config(state=DISABLED)
+            self.btn_gp1.config(state=DISABLED)
+            self.btn_gp2_gen.config(state=DISABLED)
             self.gen_l = gen_excel(self.mkt_type.get(), self.cycle, self.number, self.get_last_days)
             self.set_refresh_text_gp2(self.text_gp2, self.gen_l)
             self.gen_l.start()
