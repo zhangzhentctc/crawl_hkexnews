@@ -105,9 +105,11 @@ class viewer:
         ## Button for update
         self.btn_gp1 = Button(self.tk_root, text = STR_GP1_BTN,command=lambda: self.usr_update_db())
         self.btn_gp1.pack()
-        self.text_gp1 = Text(self.tk_root, width=20, height=1)
+
+        self.text_gp1 = Text(self.tk_root, height=1)
         self.text_gp1.pack()
         self.text_gp1.insert('insert', STR_GP2_TEXT)
+
         self.text_gp1_gap = Text(self.tk_root, height=1)
         self.text_gp1_gap.pack()
         self.text_gp1_gap.insert('insert', STR_GAP)
@@ -148,12 +150,13 @@ class viewer:
         self.comboxlist_gp2_num.bind("<<ComboboxSelected>>", self.__set_combox_num)
         self.comboxlist_gp2_num.pack()
 
-
         self.btn_gp2_gen = Button(self.tk_root, text = STR_GP2_BTN,command=lambda: self.usr_gen_excel())
         self.btn_gp2_gen.pack()
+
         self.text_gp2 = Text(self.tk_root, height=1)
         self.text_gp2.insert('insert', STR_GP2_TEXT)
         self.text_gp2.pack()
+
         self.text_gp2_gap = Text(self.tk_root, height=1)
         self.text_gp2_gap.pack()
         self.text_gp2_gap.insert('insert', STR_GAP)
@@ -262,7 +265,7 @@ class viewer:
         except:
             stopped = True
         if stopped:
-            self.gen_l = gen_excel(self.mkt_type.get(), self.cycle, self.number)
+            self.gen_l = gen_excel(self.mkt_type.get(), self.cycle, self.number, self.get_last_days)
             self.set_refresh_text_gp2(self.text_gp2, self.gen_l)
             self.gen_l.start()
         else:

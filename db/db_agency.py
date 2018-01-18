@@ -30,6 +30,10 @@ import datetime
 
 START_DATE = "2017-03-17"
 
+
+DBAGEN_CHECK_TL_DAY = "select count(*) from stock_day"
+DBAGEN_CHECK_TL_INFO = "select count(*) from stock_info"
+DBAGEN_CHECK_TL_VOL ="select count(*) from stock_vol"
 DBAGEN_QUERY_DAY_STATUS_ = "select mark from stock_day where day = "
 DBAGEN_QUERY_LAST_DAY = "select max(day) from stock_day"
 DBAGEN_QUERY_LAST_BUSY_DAY = "select max(day) from stock_day where mark = 1"
@@ -53,13 +57,18 @@ DBAGEN_CREATE_TL_VOL_SQL = "create table stock_vol(" \
                            "volume int," \
                            "percent real" \
                            ")"
-ERR_DBAGEN_NOT_EMPTY = 1
-ERR_DBAGEN_DAY_TOUCHED = 2
-ERR_DBAGEN_MAX_DAY = 3
-ERR_DBAGEN_NO_BUSY_DAY = 4
-ERR_DBAGEN_NO_STORED_CODE = 5
-ERR_DBAGEN_NO_VOL_FOUND = 6
-
+ERR_DBAGEN_BASE = 2000
+ERR_DBAGEN_NOT_EMPTY = ERR_DBAGEN_BASE + 1
+ERR_DBAGEN_DAY_TOUCHED = ERR_DBAGEN_BASE + 2
+ERR_DBAGEN_MAX_DAY = ERR_DBAGEN_BASE + 3
+ERR_DBAGEN_NO_BUSY_DAY = ERR_DBAGEN_BASE + 4
+ERR_DBAGEN_NO_STORED_CODE = ERR_DBAGEN_BASE + 5
+ERR_DBAGEN_NO_VOL_FOUND = ERR_DBAGEN_BASE + 6
+ERR_DBAGEN_BACK = ERR_DBAGEN_BASE + 7
+ERR_DBAGEN_RECOVER = ERR_DBAGEN_BASE + 8
+ERR_DBAGEN_TL_DAY_ABNORMAL = ERR_DBAGEN_BASE + 9
+ERR_DBAGEN_TL_INFO_ABNORMAL = ERR_DBAGEN_BASE + 10
+ERR_DBAGEN_TL_VOL_ABNORMAL = ERR_DBAGEN_BASE + 11
 RET_OK = 0
 
 class db_agency:
@@ -84,6 +93,21 @@ class db_agency:
         ret = self.dbop.db_disconnect()
         if ret != RET_OK:
             return ret
+        return RET_OK
+
+    def check_db_normal(self):
+        ret, day_values = self.__exec_single_query(DBAGEN_CHECK_TL_DAY)
+        if ret != RET_OK:
+            return ERR_DBAGEN_TL_DAY_ABNORMAL
+
+        ret, info_values = self.__exec_single_query(DBAGEN_CHECK_TL_INFO)
+        if ret != RET_OK:
+            return ERR_DBAGEN_TL_INFO_ABNORMAL
+
+        ret, vol_values = self.__exec_single_query(DBAGEN_CHECK_TL_VOL)
+        if ret != RET_OK:
+            return ERR_DBAGEN_TL_VOL_ABNORMAL
+
         return RET_OK
 
     def get_hungry_days(self):
@@ -252,7 +276,20 @@ class db_agency:
             str = name.replace("'",",")
             return str
 
+    def recover_db(self):
+        ret = self.dbop.recover_db()
+        if ret != RET_OK:
+            return ERR_DBAGEN_RECOVER
+        return RET_OK
+
+    def backup_db(self):
+        ret = self.dbop.back_up_db()
+        if ret != RET_OK:
+            return ERR_DBAGEN_BACK
+        return RET_OK
+
     def init_db_tl(self):
+        # Check If empty, or create
         ret = self.__check_db_empty()
 
         if ret != ERR_DBAGEN_NOT_EMPTY and ret != RET_OK:

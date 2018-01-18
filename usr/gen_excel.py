@@ -7,33 +7,53 @@ import pandas as pd
 import threading
 import os
 
-ERR_GEN_BASE = 30000
+ERR_GEN_BASE = 20000
 ERR_GEN_EXCE_ARGS = ERR_GEN_BASE + 1
 ERR_GEN_EXCE_NO_BUSY_DAY = ERR_GEN_BASE + 2
 ERR_GEN_CONS_TABLE = ERR_GEN_BASE + 3
 ERR_GEN_FILL_VOLPER = ERR_GEN_BASE + 4
 ERR_GEN_SAVE_EXCEL = ERR_GEN_BASE + 5
+ERR_GEN_DB_RECOVERED = ERR_GEN_BASE + 6
 RET_OK = 0
 
 TYPE_SH = "Hu"
 TYPE_HK = "Gang"
 TYPE_SZ = "Shen"
-STATUS_IDLE = "GEN: Idle"
-STATUS_ERR = "GEN: Error.."
-STATUS_Done = "GEN: OK"
-STATUS_PREP_DATA = "GEN: Preparing..."
-STATUS_FIND_DATA = "GEN: Finding..."
-STATUS_GEN_EXCEL = "GEN: Generating Excel..."
+
+
+
+ENGLISH = 1
+CHINESE = 2
+
+language = CHINESE
+
+if language == ENGLISH:
+    STATUS_IDLE = "GEN: Idle"
+    STATUS_ERR = "GEN: Error.."
+    STATUS_Done = "GEN: OK"
+    STATUS_PREP_DATA = "GEN: Preparing..."
+    STATUS_FIND_DATA = "GEN: Finding..."
+    STATUS_GEN_EXCEL = "GEN: Generating Excel..."
+    STATUS_DB_RECOVERED = "GEN: DB Recovered. PLS Update"
+if language == CHINESE:
+    STATUS_IDLE = "生成器：空闲"
+    STATUS_ERR = "生成器：错误 代码 "
+    STATUS_Done = "生成器：完成"
+    STATUS_PREP_DATA = "生成器：准备中..."
+    STATUS_FIND_DATA = "生成器：寻找数据..."
+    STATUS_GEN_EXCEL = "生成器：生成 Excel..."
+    STATUS_DB_RECOVERED = "生成器：数据库从灾难中恢复，请更新数据"
 
 
 class gen_excel(threading.Thread):
-    def __init__(self, mkt_type, cycle, num):
+    def __init__(self, mkt_type, cycle, num, callback):
         super(gen_excel, self).__init__()
         self.cycle = cycle
         self.num = num
         self.mkt_type = mkt_type
         self.gen_status = STATUS_IDLE
         self.stopped = False
+        self.callback = callback
 
     def validate_args(self):
         try:
@@ -52,9 +72,19 @@ class gen_excel(threading.Thread):
 
     def init_db(self):
         self.db_agen = db_agency(self.mkt_type)
+
         ret = self.db_agen.init_db_tl()
         if ret != RET_OK:
             return ret
+
+        ret = self.db_agen.check_db_normal()
+        if ret != RET_OK:
+            ret_ = self.db_agen.recover_db()
+            if ret_ != RET_OK:
+                return ret_
+            return ERR_GEN_DB_RECOVERED
+
+
         return RET_OK
 
     def __get_all_busy_days(self):
@@ -222,8 +252,13 @@ class gen_excel(threading.Thread):
     def run(self):
         self.stopped = False
         ret = self.prep_data()
-        if ret != RET_OK:
+        if ret != RET_OK and ret != ERR_GEN_DB_RECOVERED:
             self.gen_status = STATUS_ERR + " " + str(ret)
+            self.stopped = True
+            return ret
+
+        if ret == ERR_GEN_DB_RECOVERED:
+            self.gen_status = STATUS_DB_RECOVERED
             self.stopped = True
             return ret
 
@@ -240,6 +275,8 @@ class gen_excel(threading.Thread):
             return ret
 
         self.gen_status = STATUS_Done
+
+        self.callback()
         self.stopped = True
         return RET_OK
 

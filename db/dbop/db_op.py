@@ -1,12 +1,21 @@
 import sqlite3
 import time
+import os
+import shutil
+
 TYPE_SH = "Hu"
 TYPE_HK = "Gang"
 TYPE_SZ = "Shen"
 DB_NAME_SH = 'test_sh.db'
 DB_NAME_HK = 'test_hk.db'
 DB_NAME_SZ = 'test_sz.db'
-ERR_DB_BASE = 9000
+DB_NAME_SH_BAK = DB_NAME_SH + '.bak'
+DB_NAME_HK_BAK = DB_NAME_HK + '.bak'
+DB_NAME_SZ_BAK = DB_NAME_SZ + '.bak'
+tmp_dir = 'temp/'
+
+
+ERR_DB_BASE = 300
 ERR_DB_CONN = ERR_DB_BASE + 1
 ERR_DB_CUR = ERR_DB_BASE + 2
 ERR_DB_CONN_CLOSE = ERR_DB_BASE + 3
@@ -22,12 +31,75 @@ class db_op:
     def __init__(self, type):
         if type == TYPE_SH:
             self.db = DB_NAME_SH
+            self.db_bak = DB_NAME_SH_BAK
         elif type == TYPE_HK:
             self.db = DB_NAME_HK
+            self.db_bak = DB_NAME_HK_BAK
         elif type == TYPE_SZ:
             self.db = DB_NAME_SZ
+            self.db_bak = DB_NAME_SZ_BAK
         else:
             self.db = DB_NAME_HK
+            self.db_bak = DB_NAME_HK_BAK
+
+
+    def back_up_db(self):
+        self.db_close_cur()
+        self.db_disconnect()
+
+        # Create Temp/
+        isTmpExists = os.path.exists(tmp_dir)
+        if not isTmpExists:
+            try:
+                os.makedirs(tmp_dir)
+            except:
+                return -1
+
+        # Copy to Temp
+        if os.path.exists(self.db_bak):
+            try:
+                os.remove(self.db_bak)
+            except:
+                return -1
+        try:
+            shutil.copy(self.db, tmp_dir)
+        except:
+            return -1
+
+        # Rename
+        try:
+            os.rename(tmp_dir + self.db, self.db_bak)
+        except:
+            return -1
+
+        # remove
+        os.removedirs(tmp_dir)
+        return RET_OK
+
+    def recover_db(self):
+        self.db_close_cur()
+        self.db_disconnect()
+
+        # Check Backup File
+        ifBakExists = os.path.exists(self.db_bak)
+        if not ifBakExists:
+            return -1
+
+        # Remove Old DB
+        if os.path.exists(self.db):
+            try:
+                os.remove(self.db)
+            except:
+                return -1
+
+        # Rename
+        try:
+            os.rename(self.db_bak, self.db)
+        except:
+            return -1
+
+        return RET_OK
+
 
     def db_connect(self):
         try:
