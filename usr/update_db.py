@@ -152,7 +152,7 @@ class update_db(threading.Thread):
                 self.havetimeout = True
                 continue
             else:
-                return -1
+                return ret
 
         return RET_OK
 
