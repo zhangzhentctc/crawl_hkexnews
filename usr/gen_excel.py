@@ -6,6 +6,7 @@ from db.db_agency import *
 import pandas as pd
 import threading
 import os
+import openpyxl
 
 ERR_GEN_BASE = 20000
 ERR_GEN_EXCE_ARGS = ERR_GEN_BASE + 1
