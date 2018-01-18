@@ -46,10 +46,18 @@ class update_db(threading.Thread):
 
         ret = self.db_agen.check_db_normal()
         if ret != RET_OK:
+            print("Recover")
             ret_ = self.db_agen.recover_db()
             if ret_ != RET_OK:
+                print("Recover bad")
                 return ret_
 
+            self.db_agen = db_agency(self.stock_type)
+            ret = self.db_agen.init_db_tl()
+            if ret != RET_OK:
+                return ret
+
+        print("Backup")
         ret = self.db_agen.backup_db()
         if ret != RET_OK:
             return ret
@@ -62,6 +70,7 @@ class update_db(threading.Thread):
             return ret
 
         self.empty_days = list
+        print(self.empty_days)
         return RET_OK
 
     def update_info(self):
@@ -96,12 +105,14 @@ class update_db(threading.Thread):
             self.status_text = STR_UPDB_ERR + str(ret)
             return ret
 
+        print("Emptydays")
         self.status_text = STR_UPDB_GET_EMPTY_DAYS
         ret = self.get_empty_days()
         if ret != RET_OK:
             self.status_text = STR_UPDB_ERR + str(ret)
             return ret
 
+        print("Update")
         ret = self.update_info()
         if ret != RET_OK:
             self.status_text = STR_UPDB_ERR + str(ret)
