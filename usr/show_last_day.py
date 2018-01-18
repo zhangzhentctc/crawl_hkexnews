@@ -21,7 +21,7 @@ class show_last_day(threading.Thread):
             return ret, ""
         return RET_OK,  last_day
 
-    def run(self):
+    def process(self):
         ret, last_day_sh = self.get_last_day(TYPE_SH)
         if ret != RET_OK:
             return ret

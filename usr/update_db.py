@@ -8,12 +8,13 @@ from db.db_agency import *
 import threading
 
 class update_db(threading.Thread):
-    def __init__(self, type):
+    def __init__(self, type, callback):
         super(update_db, self).__init__()
         self.status_text = "Idle"
         self.stock_type = type
         self.db_agen = db_agency(self.stock_type)
         self.stopped = False
+        self.callback = callback
 
     def get_empty_days(self):
         self.status_text = "Get Empty Days"
@@ -79,6 +80,7 @@ class update_db(threading.Thread):
             return ret
         self.status_text = "crawl Ok"
         self.stopped = True
+        self.callback()
         return RET_OK
 
     def stop(self):

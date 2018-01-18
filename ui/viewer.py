@@ -14,6 +14,7 @@ if language == ENGLISH:
     STR_GP_1_SH = "SH Last Day: "
     STR_GP_1_HK = "HK Last Day: "
     STR_GP_1_HK = "SZ Last Day: "
+    STR_GP_1_ERR = "Error"
     STR_GP0_RBTN_SH = "SH"
     STR_GP0_RBTN_HK = "HK"
     STR_GP0_RBTN_SZ = "SZ"
@@ -28,6 +29,7 @@ if language == CHINESE:
     STR_GP_1_SH = "沪 更新日期: "
     STR_GP_1_HK = "港 更新日期: "
     STR_GP_1_SZ = "深 更新日期: "
+    STR_GP_1_ERR = "查看数据库更新日期错误"
     STR_GP0_RBTN_SH = "沪"
     STR_GP0_RBTN_HK = "港"
     STR_GP0_RBTN_SZ = "深"
@@ -176,9 +178,24 @@ class viewer:
 
     def get_last_days(self):
         show_ld = show_last_day()
-        show_ld.run()
-        #self.text_gp0_gap.insert('insert', STR_GAP)
-        #self.text_gp0_gap.config(state=DISABLED)
+        ret = show_ld.process()
+        if ret != RET_OK:
+            self.text_gp_1_sh.config(state=NORMAL)
+            self.text_gp_1_sh.delete(1.0, "end")
+            self.text_gp_1_sh.insert('insert', STR_GP_1_SH + STR_GP_1_ERR)
+            self.text_gp_1_sh.config(state=DISABLED)
+
+            self.text_gp_1_hk.config(state=NORMAL)
+            self.text_gp_1_hk.delete(1.0, "end")
+            self.text_gp_1_hk.insert('insert', STR_GP_1_HK + STR_GP_1_ERR)
+            self.text_gp_1_hk.config(state=DISABLED)
+
+            self.text_gp_1_sz.config(state=NORMAL)
+            self.text_gp_1_sz.delete(1.0, "end")
+            self.text_gp_1_sz.insert('insert', STR_GP_1_SZ + STR_GP_1_ERR)
+            self.text_gp_1_sz.config(state=DISABLED)
+            return
+
         self.text_gp_1_sh.config(state=NORMAL)
         self.text_gp_1_sh.delete(1.0, "end")
         self.text_gp_1_sh.insert('insert', STR_GP_1_SH + str(show_ld.last_day_sh))
@@ -193,6 +210,7 @@ class viewer:
         self.text_gp_1_sz.delete(1.0, "end")
         self.text_gp_1_sz.insert('insert', STR_GP_1_SZ + str(show_ld.last_day_sz))
         self.text_gp_1_sz.config(state=DISABLED)
+        return
 
 
     def start_viewer(self):
@@ -231,7 +249,7 @@ class viewer:
         except:
             stopped = True
         if stopped:
-            self.update_l = update_db(self.mkt_type.get())
+            self.update_l = update_db(self.mkt_type.get(), self.get_last_days)
             self.set_refresh_text_gp1(self.text_gp1, self.update_l)
             self.update_l.start()
         else:
