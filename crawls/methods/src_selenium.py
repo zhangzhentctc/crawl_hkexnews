@@ -130,14 +130,17 @@ class src_selenium:
 
         ret = self.get_link()
         if ret != RET_OK:
+            self.close_driver()
             return ret
 
         ret = self.set_date()
         if ret != RET_OK:
+            self.close_driver()
             return ret
 
         ret = self.get_src()
         if ret != RET_OK:
+            self.close_driver()
             return ret
 
         ret = self.close_driver()
@@ -145,4 +148,3 @@ class src_selenium:
             return ret
 
         return RET_OK
-        #self.print_src()
