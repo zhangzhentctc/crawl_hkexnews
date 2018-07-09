@@ -42,6 +42,8 @@ DBAGEN_QUERY_STOCK_DODES_NAMES = "select code,name from stock_info"
 DBAGEN_QUERY_CODE_ = "select * from stock_info where code = "
 DBAGEN_QUERY_HUNGRY_DAY = "select * from stock_day where mark = 0"
 DBAGEN_CHECK_EMPTY_SQL = "SELECT name FROM sqlite_master WHERE type='table'"
+
+## Create TL
 DBAGEN_CREATE_TL_DAY_SQL = "create table stock_day(" \
                            "day date primary key not null," \
                            "mark int" \
@@ -71,9 +73,18 @@ ERR_DBAGEN_TL_INFO_ABNORMAL = ERR_DBAGEN_BASE + 10
 ERR_DBAGEN_TL_VOL_ABNORMAL = ERR_DBAGEN_BASE + 11
 RET_OK = 0
 
+FILE_AVAL_DATE = 'date.txt'
+
 class db_agency:
     def __init__(self, type):
         self.dbop = db_op(type)
+        try:
+            file = open(FILE_AVAL_DATE, 'r')
+            all_line_txt = file.readlines()
+            val = all_line_txt[0].strip('\n')
+            self.avail_date = int(val)
+        except:
+            self.avail_date = 180
 
     def db_conn_cur(self):
         ret = self.dbop.db_connect()
@@ -288,10 +299,54 @@ class db_agency:
             return ERR_DBAGEN_BACK
         return RET_OK
 
+    def delete_days_data(self):
+        ## Get Day List from XX to today-180
+        ## Delete in tl stock_vol and stock_day
+        range = self.avail_date
+        today = datetime.date.today()
+        thatday = today - datetime.timedelta(days=range)
+
+        date_list = self.__gen_dateRange(START_DATE, str(thatday))
+
+        ret = self.dbop.db_connect()
+        if ret != RET_OK:
+            return ret
+
+        ret = self.dbop.db_open_cur()
+        if ret != RET_OK:
+            return ret
+
+        for day in date_list:
+            sql = "delete from stock_day where day = " + \
+                  "'" + str(day) + "'"
+            ret = self.dbop.db_exec_sql(sql)
+            if ret != RET_OK:
+                return ret
+
+            sql = "delete from stock_vol where day = " + \
+                  "'" + str(day) + "'"
+            ret = self.dbop.db_exec_sql(sql)
+            if ret != RET_OK:
+                return ret
+
+
+        ret = self.dbop.db_commit()
+        if ret != RET_OK:
+            return ret
+
+        ret = self.dbop.db_close_cur()
+        if ret != RET_OK:
+            return ret
+
+        ret = self.dbop.db_disconnect()
+        if ret != RET_OK:
+            return ret
+
+        return RET_OK
+
     def init_db_tl(self):
         # Check If empty, or create
         ret = self.__check_db_empty()
-
         if ret != ERR_DBAGEN_NOT_EMPTY and ret != RET_OK:
             return ret
 
@@ -306,6 +361,10 @@ class db_agency:
                 return ret
         else:
             ret = self.__fill_recent_days()
+            if ret != RET_OK:
+                return ret
+
+            ret = self.delete_days_data()
             if ret != RET_OK:
                 return ret
 
