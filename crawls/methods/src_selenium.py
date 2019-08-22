@@ -34,6 +34,7 @@ class src_selenium:
 
     def init_driver(self):
         try:
+            #self.driver = webdriver.Chrome()
             self.driver = webdriver.PhantomJS()
         except:
             self.selenium_err(ERR_SELENIUM_DRIVER)
@@ -50,8 +51,39 @@ class src_selenium:
             return ERR_SELENIUM_GET_TIMEOUT
         return RET_OK
 
-
     def set_date(self):
+        try:
+            btnSearch = self.driver.find_element_by_name("btnSearch")
+        except:
+            self.selenium_err(ERR_SELENIUM_FIND_BTN)
+            return ERR_SELENIUM_FIND_BTN
+
+        try:
+            txtShareholdingDate = self.driver.find_element_by_name("txtShareholdingDate")
+        except:
+            self.selenium_err(ERR_SELENIUM_FIND_DAY)
+            return ERR_SELENIUM_FIND_DAY
+
+        query_date = self.date_strcture.date_year_str + '/' + self.date_strcture.date_month_str + '/' + self.date_strcture.date_day_str
+        #print(query_date)
+        script_text = "arguments[0].setAttribute(" + "'" + "value" + "'" + "," + "'" + query_date + "'" + ")"
+
+        try:
+            self.driver.execute_script(script_text, txtShareholdingDate)
+        except:
+            self.selenium_err(ERR_SELENIUM_SET_DAY)
+            return ERR_SELENIUM_SET_DAY
+
+        time.sleep(1)
+
+        try:
+            btnSearch.click()
+        except:
+            self.selenium_err(ERR_SELENIUM_SET_BTN)
+            return ERR_SELENIUM_SET_BTN
+        return RET_OK
+
+    def set_date_old(self):
         try:
             select_day = Select(self.driver.find_element_by_name("ddlShareholdingDay"))
         except:

@@ -124,17 +124,18 @@ class crawl:
 
 
     def crawl_find_date(self):
-        tag_pnlResult = self.soup.find(id="pnlResult")
+        tag_pnlResult = self.soup.find("input", {"name": "txtShareholdingDate"})
         if tag_pnlResult == None:
             self.crawl_report_err(ERR_CRAWL_DATE_FIND)
             return ERR_CRAWL_DATE_FIND
         else:
-            tag_date = tag_pnlResult.find("div")
+            tag_date = tag_pnlResult["value"]
             if tag_date == None:
                 self.crawl_report_err(ERR_CRAWL_DATE_FIND)
                 return ERR_CRAWL_DATE_FIND
             else:
-                date = tag_date.string.strip().split(":")[1].strip()
+                print(tag_date)
+                date = tag_date
                 if self.__validate_date(date) == False:
                     self.crawl_report_err(ERR_CRAWL_DATE_FORMAT)
                     return ERR_CRAWL_DATE_FIND
@@ -156,47 +157,38 @@ class crawl:
             return False
 
     def crawl_find_stock_tl(self):
-        row0 = self.soup.find_all("tr", "row0")
-        row1 = self.soup.find_all("tr", "row1")
 
-        if row0 == None or row1 == None:
-            self.crawl_report_err(ERR_CRAWL_STOCK_TL_FIND)
-            return ERR_CRAWL_STOCK_TL_FIND
-
+        tables = self.soup.find_all("tbody")
+        table = tables[1].find_all("tr")
         data = []
-        for row in row0 + row1:
-            columns = row.find_all("td", "arial12black")
-            if columns == None:
-                self.crawl_report_err(ERR_CRAWL_STOCK_TL_FIND)
-                return ERR_CRAWL_STOCK_TL_FIND
-            if len(columns) < 4:
-                self.crawl_report_err(ERR_CRAWL_STOCK_TL_ERR)
-                return ERR_CRAWL_STOCK_TL_ERR
+        for row in table:
+            items = row.find_all("div")
+            pure_items = []
+            for item in items:
+                pure_items.append(item.string)
+            print(pure_items[1])
+            print(pure_items[5])
+            print(pure_items[7])
 
-            item = []
-            for column in columns:
-                str0 = column.string
-                str = str0.strip()
-                item.append(str)
-
-            ret, code = self.__parse_stock_code(item[0])
+            ret, code = self.__parse_stock_code(pure_items[1])
             if ret == RET_ERR:
                 self.crawl_report_err(ERR_CRAWL_STOCK_CODE)
                 return ERR_CRAWL_STOCK_CODE
 
-            ret, vol = self.__parse_stock_vol(item[2])
+            ret, vol = self.__parse_stock_vol(pure_items[5])
             if ret == RET_ERR:
                 self.crawl_report_err(ERR_CRAWL_STOCK_VOL)
                 return ERR_CRAWL_STOCK_VOL
 
-            ret, per = self.__parse_stock_per(item[3])
+            ret, per = self.__parse_stock_per(pure_items[7])
             if ret == RET_ERR:
+                print(per)
                 self.crawl_report_err(ERR_CRAWL_STOCK_PER)
                 return ERR_CRAWL_STOCK_PER
 
             data.append({
                 "Code": code,
-                "Name": item[1],
+                "Name": pure_items[3],
                 "Volume": vol,
                 "Percent": per
             })
@@ -231,11 +223,11 @@ class crawl:
         try:
             stock_per = float(stock_per_str.strip("%")) / 100
         except:
-            return RET_ERR, -1
+            return RET_OK, 0
         if stock_per >= 0 and stock_per <= 1:
             return RET_OK, stock_per
         else:
-            return RET_ERR, -1
+            return RET_OK, 0
 
     def crawl_report_err(self,err_type):
         print("Error")
